@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 import "./App.css"
 
 export default class App extends React.Component {
@@ -9,7 +9,7 @@ export default class App extends React.Component {
   render() {
     return (
       <div className="component-app text-red">
-        Hello world!
+        <div className="text-center">Hello world!</div>
       </div>
     );
   }

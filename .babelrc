@@ -1,6 +1,19 @@
 {
   "presets": [
-    "@babel/preset-env",
-    "@babel/preset-react"
+    "@babel/preset-env"
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-transform-react-jsx", {
+        "pragma": "h",
+        "pragmaFrag": "Fragment"
+      }
+    ],
+    [
+      "babel-plugin-jsx-pragmatic", {
+        "module": "preact",
+        "export": "h",
+        "import": "h"
+    }]
   ]
 }

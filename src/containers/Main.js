@@ -1,4 +1,5 @@
 import { connect } from 'react-redux'
+import { reduxForm } from 'redux-form'
 import { operations } from '../redux'
 import { Main } from '../components'
 
@@ -15,4 +16,6 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Main)
+export default reduxForm({ form: 'testForm'})(
+  connect(mapStateToProps, mapDispatchToProps)(Main)
+)

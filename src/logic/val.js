@@ -1,7 +1,5 @@
 import bigInt from 'big-integer'
-import { satoshi, usd, format, util } from '../utils'
-
-const isFloat = (v) => (!isNaN(v) && v.toString().indexOf('.') != -1)
+import { satoshi, usd, format, util, is } from '../utils'
 
 export default class Val {
   constructor(sat, decimals) {
@@ -32,7 +30,7 @@ export default class Val {
   }
 
   mul = (v) => {
-    if (isFloat(v)) {
+    if (is.float(v)) {
       const dec = util.getFloatDecimals(v)
       const btc = usd.to(this.btc, this.decimals, v, dec)
       return Val.fromBtc(btc, this.decimals)

@@ -1,5 +1,4 @@
 import assert from 'assert'
-import bigInt from 'big-integer'
 import { satoshi } from '../src/utils'
 import { Val } from '../src/logic'
 
@@ -14,7 +13,7 @@ describe('utils', function() {
     })
   })
 
-  describe('Val', function() {
+  describe('val', function() {
     it('methods are correct', function() {
       const a = Val.fromSat('12', 2)
       const b = Val.fromSat('10', 2)
@@ -23,6 +22,15 @@ describe('utils', function() {
       assert(a.mul(0.02).btc, '0')
       assert(a.mul(0.2).btc, '0.02')
       assert(a.mul(5.5).btc, '0.66')
+
+      const c = Val.fromSat('-20', 2)
+      assert(c.add(a).mul(2).btc, '-0.16')
+    })
+
+    it('usd convertions', function() {
+      const a = Val.fromSat('12', 2)
+      assert(a.usd(0.2, 5), '0.024')
+      assert(Val.fromUsd('0.024', 2, '0.2', 2).btc, '0.12')
     })
   })
 })

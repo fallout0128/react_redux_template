@@ -1,1 +1,1 @@
-export { default as Val } from './val'
+export { default as Coin } from './coin'

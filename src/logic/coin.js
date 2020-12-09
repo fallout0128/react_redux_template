@@ -1,9 +1,9 @@
 import bigInt from 'big-integer'
-import { satoshi, usd, format, util, is } from '../utils'
+import { satoshi, usd, format, util, is } from './utils'
 
-export default class Val {
+export default class Coin {
   constructor(sat, decimals) {
-    this.type = 'Val'
+    this.type = 'Coin'
     this.decimals = decimals
     this.sat = sat
     this.btc = satoshi.from(sat, decimals)
@@ -11,17 +11,17 @@ export default class Val {
 
   static fromBtc(btc, decimals) {
     const sat = satoshi.to(btc, decimals)
-    return Val.fromSat(sat, decimals)
+    return Coin.fromSat(sat, decimals)
   }
 
   static fromSat(sat, decimals) {
-    return new Val(new bigInt(sat), decimals)
+    return new Coin(new bigInt(sat), decimals)
   }
 
   static fromUsd = (fiatBtc, decimals, rate, usdDecimals = undefined) => {
     const rateDecimals = usdDecimals || util.getFloatDecimals(rate)
     const btc = usd.from(fiatBtc, decimals, rate, rateDecimals)
-    return Val.fromBtc(btc, decimals)
+    return Coin.fromBtc(btc, decimals)
   }
 
   check = (v) => {
@@ -33,18 +33,18 @@ export default class Val {
     if (is.float(v)) {
       const dec = util.getFloatDecimals(v)
       const btc = usd.to(this.btc, this.decimals, v, dec)
-      return Val.fromBtc(btc, this.decimals)
+      return Coin.fromBtc(btc, this.decimals)
     }
-    return Val.fromSat(this.sat.multiply(v), this.decimals)
+    return Coin.fromSat(this.sat.multiply(v), this.decimals)
   }
 
   add = (v) => {
     if (v.type === this.type) {
       this.check(v)
-      return Val.fromSat(this.sat.add(v.sat), this.decimals)
+      return Coin.fromSat(this.sat.add(v.sat), this.decimals)
     }
 
-    return Val.fromSat(this.sat.add(v), this.decimals)
+    return Coin.fromSat(this.sat.add(v), this.decimals)
   }
 
   usd = (rate, decimals = undefined) => {

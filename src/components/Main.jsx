@@ -2,6 +2,8 @@ import React from "react"
 import { Field } from 'redux-form'
 import { Link } from 'react-router-dom'
 import { rules, TextInput } from '../components/reduxform'
+import Counter from './Counter'
+import { SwapModal } from '../modals'
 import "./Main.css"
 
 export default class Main extends React.Component {
@@ -11,6 +13,7 @@ export default class Main extends React.Component {
     this.fields = {
       test: 'test'
     }
+    
   }
 
   componentDidMount = () => {
@@ -29,6 +32,7 @@ export default class Main extends React.Component {
         <div className="text-center">
           {loading? 'Loading...' : data}   
         </div>
+        <Counter/>
         <Link className="text-center" to="/login">Check router</Link>
 
         <form onSubmit={handleSubmit(this.onSubmit)}>
@@ -37,12 +41,23 @@ export default class Main extends React.Component {
             className={`form-control`}
             name={this.fields.test}
             component={TextInput}
-            validate={[ rules.notEmpty ]} 
+            validate={[ rules.required ]} 
           />
           <button type="submit" className="mt-1 w-100 btn btn-primary">
             submit
           </button>
         </form>
+
+        <SwapModal 
+          isOpen={this.state.modal} 
+          onClose={() => this.setState({ modal: false })} 
+        />
+        <button 
+          className="btn btn-primary mt-2" 
+          onClick={() => this.setState({ modal: true })}
+        >
+          show modal
+        </button>
       </div>
     );
   }

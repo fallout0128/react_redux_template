@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "axios": "^0.20.0",
+    "format-number": "^3.0.0",
+    "numeral": "^2.0.6",
     "preact": "^10.5.2",
     "react-modal": "^3.12.1",
     "react-numeric-input": "^2.2.3",

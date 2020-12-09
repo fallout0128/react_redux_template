@@ -1,5 +1,5 @@
 export { default as satoshi } from './satoshi'
 export { default as format } from './format'
-export { default as usd } from './usd'
+export { default as fiat } from './fiat'
 export { default as util } from './util'
 export { default as is } from './is'

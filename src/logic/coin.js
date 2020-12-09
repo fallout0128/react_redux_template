@@ -1,5 +1,5 @@
 import bigInt from 'big-integer'
-import { satoshi, usd, format, util, is } from './utils'
+import { satoshi, fiat, format, util, is } from './utils'
 
 export default class Coin {
   constructor(sat, decimals) {
@@ -18,11 +18,15 @@ export default class Coin {
     return new Coin(new bigInt(sat), decimals)
   }
 
-  static fromUsd = (fiatBtc, decimals, rate, usdDecimals = undefined) => {
-    const rateDecimals = usdDecimals || util.getFloatDecimals(rate)
-    const btc = usd.from(fiatBtc, decimals, rate, rateDecimals)
+  static fromFiat = (fiatBtc, decimals, rate, fiatDecimals = undefined) => {
+    const rateDecimals = fiatDecimals || util.getFloatDecimals(rate)
+    const btc = fiat.from(fiatBtc, decimals, rate, rateDecimals)
     return Coin.fromBtc(btc, decimals)
   }
+
+  format = (symbol = this.symbol) => {
+    return format.btc(this.btc, this.decimals, symbol)
+  } 
 
   check = (v) => {
     if (v.decimals !== this.decimals)
@@ -32,7 +36,7 @@ export default class Coin {
   mul = (v) => {
     if (is.float(v)) {
       const dec = util.getFloatDecimals(v)
-      const btc = usd.to(this.btc, this.decimals, v, dec)
+      const btc = fiat.to(this.btc, this.decimals, v, dec)
       return Coin.fromBtc(btc, this.decimals)
     }
     return Coin.fromSat(this.sat.multiply(v), this.decimals)
@@ -47,8 +51,8 @@ export default class Coin {
     return Coin.fromSat(this.sat.add(v), this.decimals)
   }
 
-  usd = (rate, decimals = undefined) => {
+  fiat = (rate, decimals = undefined) => {
     const rateDecimals = decimals || util.getFloatDecimals(rate)
-    return usd.to(this.btc, this.decimals, rate, rateDecimals)
+    return fiat.to(this.btc, this.decimals, rate, rateDecimals)
   }
 }

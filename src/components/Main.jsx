@@ -13,7 +13,6 @@ export default class Main extends React.Component {
     this.fields = {
       test: 'test'
     }
-    
   }
 
   componentDidMount = () => {
@@ -41,7 +40,7 @@ export default class Main extends React.Component {
             className={`form-control`}
             name={this.fields.test}
             component={TextInput}
-            validate={[ rules.required ]} 
+            
           />
           <button type="submit" className="mt-1 w-100 btn btn-primary">
             submit

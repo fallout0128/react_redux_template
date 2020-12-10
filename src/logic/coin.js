@@ -2,8 +2,9 @@ import bigInt from 'big-integer'
 import { satoshi, fiat, format, util, is } from './utils'
 
 export default class Coin {
-  constructor(sat, decimals) {
+  constructor(sat, decimals, symbol = '') {
     this.type = 'Coin'
+    this.symbol = symbol
     this.decimals = decimals
     this.sat = sat
     this.btc = satoshi.from(sat, decimals)
@@ -22,6 +23,15 @@ export default class Coin {
     const rateDecimals = fiatDecimals || util.getFloatDecimals(rate)
     const btc = fiat.from(fiatBtc, decimals, rate, rateDecimals)
     return Coin.fromBtc(btc, decimals)
+  }
+
+  compare = (v) => {
+    if (v.type === this.type) {
+      this.check(v)
+      return new bigInt(this.sat).compare(new bigInt(v.sat))
+    }
+
+    return new bigInt(this.sat).compare(v)
   }
 
   format = (symbol = this.symbol) => {

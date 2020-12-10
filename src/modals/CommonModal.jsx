@@ -14,11 +14,16 @@ const customStyles = {
   }
 }
 
-export default function({ contentLabel, isOpen, buttons, onRequestClose, children }) {
+export default function({ contentLabel, isOpen, afterOpen, buttons, onRequestClose, children }) {
+  if (!isOpen) {
+    console.log('here')
+    return <div/>
+  }
+
   return (
     <Modal
       isOpen={isOpen}
-      //onAfterOpen={afterOpenModal}
+      onAfterOpen={afterOpen}
       onRequestClose={onRequestClose}
       style={customStyles}
       contentLabel={contentLabel}

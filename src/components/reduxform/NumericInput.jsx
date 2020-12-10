@@ -1,27 +1,23 @@
 import React from 'react'
-import NumericInput from 'react-numeric-input'
-import { util } from '../../logic/utils'
-import { format } from '../../logic/utils'
 import './style.css'
 
 export default function (field) {
-  const { meta, value, decimals, className, onChange, input } = field
+  const { meta, value, suffix, prefix, className, onChange, input } = field
   const { touched, error } = meta
   const errorMes = error
 
-  function parse(v) {
-    return format.decimals(v.toString(), decimals).toString()
-  }
-
   return (
     <React.Fragment>
-      <NumericInput
-        parse={parse}
-        className={`form-control ${className}`}
-        value={value}
-        onInput={onChange}
-        {...input}
-      />
+      <div className="d-flex input" >
+        {prefix}
+        <input
+          className={`form-control ${className}`}
+          value={value}
+          onChange={onChange}
+          {...input}
+        />
+        {suffix}
+      </div>
       <small className={`text-danger`}>
         {touched? errorMes : ''}
       </small>

@@ -9,6 +9,8 @@ it('methods are correct', function() {
   expect(a.mul(0.2).btc).toEqual('0.02')
   expect(a.mul(5.5).btc).toEqual('0.66')
 
+  expect(Coin.fromBtc('0', 8).btc).toEqual('0')
+
   const c = Coin.fromSat('-20', 2)
   expect(c.add(a).mul(2).btc).toEqual('-0.16')
 })
@@ -28,4 +30,23 @@ it('formats btc', function() {
 
   a = Coin.fromSat('-123456789', 1)
   expect(a.format('BTC')).toEqual('-12,345,678.9 BTC')
+})
+
+it('can compare', function() {
+  let a = Coin.fromSat('1000000', 8)
+  let b = Coin.fromSat('1000001', 8)
+  expect(a.compare(b)).toEqual(-1)
+  expect(a.compare(a)).toEqual(0)
+  expect(b.compare(a)).toEqual(1)
+  
+  let c = Coin.fromSat('1000001', 6)
+  expect(c.compare(100)).toEqual(1)
+  expect(c.compare(1000001)).toEqual(0)
+  expect(c.compare(1000002)).toEqual(-1)
+
+  try {
+    expect(a.compare(c))
+    throw 'Invalid compare'
+  }
+  catch (err) {}
 })

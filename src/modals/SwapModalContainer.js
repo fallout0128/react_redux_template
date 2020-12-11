@@ -1,54 +1,36 @@
-import { reduxForm } from 'redux-form'
-import React from 'react'
-import { forceModalUnmount } from '../hoc'
-import SwapModalComponent from './SwapModalComponent'
+import { reduxForm, formValueSelector } from 'redux-form'
+import { connect } from 'react-redux'
+import { forceModalUnmount, withRequest } from '../hoc'
+import SwapModalComponent, { fields } from './SwapModalComponent'
 
-function withData(WrappedComponent) {  
-  return class extends React.Component {
-    constructor(props) {
-      super(props)
-      this.state = {
-        decimals: 8, 
-        rate: '2',
-        from: {
-          max: '1.23',
-          min: '0.1'
-        },
-        to: {
-          max: '2.23',
-          min: '0.3'
-        }
-      }
+const form = 'SwapValidation'
+const reduxFormContainer = forceModalUnmount(
+  reduxForm({
+    form
+  }
+)(withRequest(SwapModalComponent)))
 
-      this.onCurrencyChanged = this.onCurrencyChanged.bind(this)
-      this.onValueChanged = this.onValueChanged.bind(this)
-    }
+const selector = formValueSelector(form)
 
-    onCurrencyChanged(from, to) {
-      console.log(`On currency changed ${from} ${to}`)
-    }
+function mapStateToProps(state) {
+  const currencyFrom = selector(state, fields.currencyFrom) || 'BTC'
+  const currencyTo = selector(state, fields.currencyTo) || 'LTC'
+  const amountFrom = selector(state, fields.from)
+  const amountTo = selector(state, fields.to)
 
-    onValueChanged(from, to) {
-      console.log(`On value changed ${from} ${to}`)
-    }
-
-    render() {
-      return (
-        <WrappedComponent 
-          {...this.props} 
-          data={this.state}
-          onValueChanged={this.onValueChanged}
-          onCurrencyChanged={this.onCurrencyChanged}
-        />
-      )
-    }
-  };
+  return {
+    currencyTo,
+    currencyFrom,
+    amountFrom,
+    amountTo
+  }
 }
 
-const enchanced = withData(SwapModalComponent)
+function mapDispatchToProps(dispatch) {
+  return {
 
-export default forceModalUnmount(
-  reduxForm({
-    form: 'SwapValidation'
   }
-)(enchanced))
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(reduxFormContainer)
+

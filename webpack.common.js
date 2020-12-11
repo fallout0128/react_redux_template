@@ -14,9 +14,21 @@ module.exports = {
         exclude: /node_modules/,
         use: ['babel-loader']
       },
-      { 
-        test: /\.css$/, loader: "style-loader!css-loader" 
-      },
+      {
+        test: /\.css$/,
+        use: [
+          {
+            loader: "style-loader"
+          },
+          {
+            loader: "css-loader",
+            options: {
+              sourceMap: true,
+              modules: true,
+            }
+          }
+        ]
+      }
     ]
   },
   resolve: {

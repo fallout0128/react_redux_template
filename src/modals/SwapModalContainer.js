@@ -12,17 +12,24 @@ const reduxFormContainer = forceModalUnmount(
 
 const selector = formValueSelector(form)
 
-function mapStateToProps(state) {
+function mapStateToProps(state, props) {
+  const balance = {
+    sat: '1000000000',
+    btc: '1'
+  }
   const currencyFrom = selector(state, fields.currencyFrom) || 'BTC'
   const currencyTo = selector(state, fields.currencyTo) || 'LTC'
   const amountFrom = selector(state, fields.from)
   const amountTo = selector(state, fields.to)
 
   return {
+    initCurrencyFrom: props.initCurrencyFrom || 'BTC',
+    initCurrencyTo: props.initCurrencyTo || 'ETH',
     currencyTo,
     currencyFrom,
     amountFrom,
-    amountTo
+    amountTo,
+    balance
   }
 }
 

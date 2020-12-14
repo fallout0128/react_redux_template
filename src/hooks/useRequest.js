@@ -19,9 +19,8 @@ export default ({ url, method, body, onSuccess }) => {
       console.log(err)
       setErrors(
         <div className="alert alert-danger">
-          <h4>Ooops...</h4>
           <ul className="my-0">
-            {(err && err.message) || 'invalid request'}
+            <small>{(err && err.message) || 'invalid request'}</small>
           </ul>
         </div>
       )

@@ -41,9 +41,8 @@ export default function withRequest(
         console.log(err)
         this.setErrors(
           <div className="alert alert-danger">
-            <h4>Ooops...</h4>
-            <ul className="my-0">
-              {(err && err.message) || 'invalid request'}
+            <ul className="pl-0 m-0">
+              <small>{(err && err.message) || 'invalid request'}</small>
             </ul>
           </div>
         )

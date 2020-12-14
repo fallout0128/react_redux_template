@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import SwapHistory from './SwapHistory'
 
 export default class Page extends React.Component {
   render() {

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { rules, TextInput } from '../components/reduxform'
 import Counter from './Counter'
 import { SwapModal } from '../modals'
+import SwapHistory from './SwapHistory'
 import "./Main.css"
 
 export default class Main extends React.Component {
@@ -57,6 +58,8 @@ export default class Main extends React.Component {
         >
           show modal
         </button>
+
+        <SwapHistory/>
       </div>
     );
   }

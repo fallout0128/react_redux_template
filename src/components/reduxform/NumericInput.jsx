@@ -1,13 +1,8 @@
 import React from 'react'
 import styles from './style.css'
 
-console.log(styles)
-
 export default function (field) {
-  const { meta, placeholder, readOnly, value, suffix, prefix, className, onChange, input } = field
-  const { touched, error } = meta
-  const errorMes = error
-
+  const { placeholder, readOnly, value, suffix, prefix, className, onChange, input } = field
   return (
     <React.Fragment>
       <div className={`d-flex ${styles.commonInput}`}>
@@ -24,9 +19,6 @@ export default function (field) {
         />
         {suffix}
       </div>
-      <small className={`text-danger`}>
-        {touched? errorMes : ''}
-      </small>
     </React.Fragment>
   )
 }

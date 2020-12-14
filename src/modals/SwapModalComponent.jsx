@@ -39,11 +39,17 @@ export default class SwapModalComponent extends React.Component {
     }
     
     const { from, to } = this.state
-    this.notmoreThanBalance = rules.maxBtc(props.balance.btc, from.decimals, true)
-    this.betweenRuleFrom = () => undefined
-    this.onValueChangedFromDebounced = util.debounce(this.onValueChangedFrom, DEBOUNCE_MSEC)
-    this.onValueChangedToDebounced = util.debounce(this.onValueChangedTo, DEBOUNCE_MSEC)
-    
+    this.notmoreThanBalance = rules.maxBtc(
+      props.balance.btc, 
+      from.decimals, 
+      { 
+        included: true, 
+        message: v => `
+          Insufficient balance: enter value 
+          less or equal to ${v} ${this.props.initCurrencyFrom}`
+      }
+    )
+    this.debounced = util.debounce(this.onValueChangedIml, DEBOUNCE_MSEC)
   }
 
   setSuccess = () => setState({ success: true })
@@ -54,36 +60,8 @@ export default class SwapModalComponent extends React.Component {
     const currencyFrom = initCurrencyFrom 
     const currencyTo = initCurrencyTo
 
-    //this.updateMinimum(currencyFrom, currencyTo)
     change(fields.currencyFrom, currencyFrom)
     change(fields.currencyTo, currencyTo)
-  }
-
-  updateMinimum = async (fromCurrency, toCurrency) => {
-    const { doRequest } = this.props
-    const { from } = this.state
-
-    const body = {
-      fromSymbol: fromCurrency.toLowerCase(),
-      toSymbol: toCurrency.toLowerCase()
-    }
-
-    const res = await doRequest({
-      url: 'https://www.bitfi.com/exchange/minimum',
-      method: 'post',
-      body
-    })
-
-    console.log(res)
-
-    this.setState({
-      from: {
-        ...this.state.from,
-        min: res.amount
-      }
-    })
-
-    this.betweenRuleFrom = rules.betweenBtc(from.min, from.max, from.decimals)
   }
 
   renderCurrencyOption = (name, readonly) => {
@@ -120,32 +98,28 @@ export default class SwapModalComponent extends React.Component {
   onRateTypeChanged = (v) => {
     const { amountFrom } = this.props
     this.setState({ fixedRate: v }, () => {
-      this.setLoading(true, fields.to)
-      this.onValueChangedFrom(amountFrom)
-    })    
-  }
-
-  onCurrencyChanged = async (from, to) => {
-    this.setLoading(true, fields.to, () => {
-      change(fields.currencyTo, to)
-      this.onValueChangedFrom(this.props.amountFrom, to)
+      this.onValueChanged(amountFrom, fields.to)
     })
   }
 
-  onValueChangedFrom = async (v, currency = undefined) => {
+  onCurrencyChanged = async (from, to) => {
+    this.onValueChanged(this.props.amountFrom, fields.to)
+  }
+
+  onValueChanged = async (v, updateField) => {
+    this.setLoading(true, updateField)
+    return this.debounced(v, updateField)
+  }
+
+  onValueChangedIml = async (v, updateField) => {
     try {
-      const { doRequest, currencyFrom, touch, valid, change } = this.props
-      let { currencyTo } = this.props
-
-      if (currency) {
-        currencyTo = currency
-      }
-
-      console.log(currency)
+      const { doRequest, change, currencyFrom, currencyTo, valid } = this.props
+      const fromSymbol = updateField === fields.to? currencyFrom : currencyTo
+      const toSymbol = updateField === fields.to? currencyTo : currencyFrom 
 
       const body = {
-        fromSymbol: currencyFrom.toLowerCase(),
-        toSymbol: currencyTo.toLowerCase(),
+        fromSymbol,
+        toSymbol,
         amountFrom: v,
         fixedRate: this.state.fixedRate
       }
@@ -155,15 +129,16 @@ export default class SwapModalComponent extends React.Component {
         method: 'post',
         body
       })
-      this.setLoading(false, 'to', () => {
-        return res && res.amountTo && change(fields.to, res.amountTo)
-      })
+
       this.setState({ rate: res.rate })
+      this.setLoading(false, updateField, () => {
+        return res && res.amountTo && change(updateField, res.amountTo)
+      })
     }
     catch (exc) {
       this.setState({ rate: null })
-      this.setLoading(false, 'to')
-      change(fields.to, '')
+      this.setLoading(false, updateField)
+      change(updateField, '')
     }
   }
 
@@ -174,49 +149,9 @@ export default class SwapModalComponent extends React.Component {
     })
   }
 
-  onValueChangedTo = async (v) => {
-    try {
-      const { doRequest, currencyFrom, currencyTo, valid, change } = this.props
-                  
-      const body = {
-        fromSymbol: currencyTo.toLowerCase(),
-        toSymbol: currencyFrom.toLowerCase(),
-        amountFrom: v,
-        fixedRate: true
-      }
-      
-      const res = await doRequest({
-        url: 'https://www.bitfi.com/exchange/estimate',
-        method: 'post',
-        body
-      })
-
-      this.setLoading(false, 'from', () => {
-        return res && res.amountTo && change(fields.from, res.amountTo)
-      })
-
-      console.log(res)
-      this.setState({ rate: res.rate })
-    }
-    catch (exc) {
-      this.setLoading(false, 'from')
-      this.setState({ rate: null })
-      change(fields.to, '')
-    }
-  }
-
   onSubmit = (data) => {
     console.log(data)
     //this.setSuccess(true)
-  }
-
-  swapCurrencies = () => {
-    const { currencyFrom, currencyTo, change, amountTo, amountFrom } = this.props
-    
-    const tmp = currencyFrom
-    change(fields.currencyFrom, currencyTo)
-    change(fields.currencyTo, tmp)
-    this.onValueChanged(amountFrom, amountTo)
   }
 
   renderButtons = () => {
@@ -237,18 +172,24 @@ export default class SwapModalComponent extends React.Component {
 
         <button 
           type="button" 
-          disabled={loading}
           className="btn btn-secondary" 
           onClick={onClose}
         >
-          {loading? '...' : 'Close'}
+          Close
         </button>
       </React.Component>
     )
   }
+  
+  renderError = ({input, meta, ...props}) => (
+    meta.error &&
+    <div className="alert alert-danger">
+      <small>{meta.error}</small>
+    </div>
+  )
 
   render() {
-    const { isOpen, onClose, change, errors, initCurrencyFrom, currencyTo } = this.props
+    const { isOpen, onClose, errors, initCurrencyFrom, currencyTo } = this.props
     const { success, from, to, rate, fixedRate } = this.state
     const loading = from.loading || to.loading
     
@@ -291,18 +232,14 @@ export default class SwapModalComponent extends React.Component {
                 parse={parse(from.decimals)}
                 format={(v) => v && v.replace(',', '.')}
                 component={NumericInput} 
-                onChange={(e, v) => {
-                  this.setLoading(true, fields.to)
-                  this.onValueChangedFromDebounced(v)
-                }}
-                validate={[ rules.required, this.betweenRuleFrom, this.notmoreThanBalance ]}
+                onChange={(e, v) => this.onValueChanged(v, fields.to)}
                 suffix={<div className="p-2 pr-3">BTC</div>}
               />
             </div>
             
             {
               <div className={`${fixedRate? 'text-success' : ''}`}>
-                  <small>1 {initCurrencyFrom.toUpperCase()} ~ {(rate && !loading)? parseFloat(rate).toFixed(4) : '...'} {currencyTo.toUpperCase()}</small>
+                <small>1 {initCurrencyFrom.toUpperCase()} {fixedRate? '=' : '~'} {(rate && !loading)? parseFloat(rate).toFixed(4) : '...'} {currencyTo.toUpperCase()}</small>
               </div>
             }
 
@@ -313,16 +250,21 @@ export default class SwapModalComponent extends React.Component {
                 name={fields.to} 
                 parse={parse(to.decimals)}
                 component={NumericInput}
-                onChange={(e, v) => {
-                  this.setLoading(true, fields.from)
-                  this.setState({ fixedRate: true })
-                  this.onValueChangedToDebounced(v)
-                }}
-                validate={[ /*rules.required*/ ]} 
+                onChange={(e, v) => this.setState({ fixedRate: true }, () => 
+                    this.onValueChanged(v, fields.from)
+                  )
+                }
                 suffix={this.renderCurrencyOption(fields.currencyTo, loading)}
               />
             </div>
           </form>
+          <div>
+            <Field 
+              name={fields.from} 
+              component={this.renderError} 
+              validate={[ this.notmoreThanBalance ]}
+            />
+          </div>
           {errors}
         </div>
       </CommonModal>

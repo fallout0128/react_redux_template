@@ -1,9 +1,10 @@
 import React from 'react'
 import { change, Field } from 'redux-form'
-import { NumericInput, rules } from '../components/reduxform'
+import { NumericInput, rules, Dropdown } from '../components/reduxform'
 import CommonModal from './CommonModal'
 import SuccessModal from './SuccessModal'
 import { util, format } from '../logic/utils'
+
 
 function parse(decimals) {
   return (v) => {
@@ -31,11 +32,14 @@ export default class SwapModalComponent extends React.Component {
         loading: false
       },
       to: {
-        max: '100000',
         decimals: 8,
         loading: false
       },
-      fixedRate: false
+      fixedRate: false,
+      currencies: {
+        fixed: [],
+        floating: []
+      }
     }
     
     const { from, to } = this.state
@@ -55,45 +59,71 @@ export default class SwapModalComponent extends React.Component {
   setSuccess = () => setState({ success: true })
 
   async componentDidMount() {
-    const { change, initCurrencyFrom, initCurrencyTo } = this.props
+    const { change, initCurrencyFrom, initCurrencyTo, doRequest } = this.props
     
     const currencyFrom = initCurrencyFrom 
     const currencyTo = initCurrencyTo
 
+    const res = await doRequest({
+      method: 'post',
+      url: 'https://www.bitfi.com/exchange/currencies',
+      body: {
+        filter: 'ALL'
+      }
+    })
+    const fixed = res.filter(v => v.fixedRateEnabled)
+    const floating = res.filter(v => !v.fixedRateEnabled)
+    
+    this.setState({
+      currencies: {
+        fixed,
+        floating
+      }
+    })
+
     change(fields.currencyFrom, currencyFrom)
     change(fields.currencyTo, currencyTo)
+
+    
   }
+
+  renderItem = (item, i, onSelected) => (
+    <div
+      onClick={onSelected}  
+      className="w-100 d-flex d-flex justify-content-between pl-4 pr-4"
+    >
+      <a className="w-100  p-0">{item.value}</a> 
+      <div>{item.fixedRate? 'fixed' : ''}</div>
+    </div>
+  )
 
   renderCurrencyOption = (name, readonly) => {
     const { initCurrencyFrom } = this.props
-    const currencies = [
-      'BTC',
-      'LTC',
-      'ETH'
-    ]
+    const { currencies: { fixed, floating } } = this.state 
+    
+    const currencies = [...fixed, ...floating]
+    const names = currencies.map(v => ({ 
+      fixedRate: v.fixedRateEnabled,
+      value: v.currencySymbol.toUpperCase() 
+    }))
 
     return (
       <Field 
         name={name} 
         readOnly={readonly}
-        style="border: none" 
-        component="select"
-        onChange={(e, v) => this.onCurrencyChanged(this.props.currencyFrom, v)}
-        validate={[ rules.required ]}
-        
-      >
-        {currencies.map(c => 
-          <option 
-            id={c} 
-            disabled={initCurrencyFrom.toLowerCase() === c.toLowerCase()}
-            value={c}
-          >
-            {c}
-          </option>)
+        elements={names} 
+        component={Dropdown}
+        onChange={(v, i) => {
+          console.log(v)
+          this.onCurrencyChanged(this.props.currencyFrom, v)}
         }
+        validate={[ rules.required ]}
+        renderItem={this.renderItem}
+      >
       </Field>
     )
   }
+
 
   onRateTypeChanged = (v) => {
     const { amountFrom } = this.props
@@ -209,6 +239,7 @@ export default class SwapModalComponent extends React.Component {
         buttons={this.renderButtons()}
       >
         <div>
+        
           <div className="d-flex">
             <button 
               onClick={() => this.onRateTypeChanged(false)} 

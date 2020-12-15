@@ -13,10 +13,8 @@ export default function({ }) {
       authToken: protectedToken
     },
     method: 'post',
-    onSuccess: (arr) => {
-      console.log(arr)
-
-      setHistory(arr)
+    onSuccess: h => {
+      setHistory(h)
     }
   })
 
@@ -39,22 +37,7 @@ export default function({ }) {
       </div>
     )
   }
-/*
-  amountExpectedTo: "0.18503567"
-amountSent: "1.26502658"
-changellyID: "dvw9smlpvl81pq4i"
-contractFrom: null
-contractTo: null
-fixedRate: false
-fromSymbol: "ltc"
-networkFrom: "ltc"
-networkTo: "eth"
-noxSwapID: "57e3a7d2-1a9a-429b-90a6-687475df8504"
-payinAddress: "LhFnZXvYqA9aNe5eB8f3nBjCj6r8fntYKW"
-payoutAddress: "0xa5740822D16E7e15912417850e1A123Be971D46C"
-toSymbol: "eth"
-tracking: "https:
-*/
+
   return (
     <div>
       <h3>History</h3>

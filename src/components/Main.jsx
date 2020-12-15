@@ -5,7 +5,9 @@ import { rules, TextInput } from '../components/reduxform'
 import Counter from './Counter'
 import { SwapModal } from '../modals'
 import SwapHistory from './SwapHistory'
+import { Dropdown } from '../components'
 import "./Main.css"
+
 
 export default class Main extends React.Component {
   constructor(props) {

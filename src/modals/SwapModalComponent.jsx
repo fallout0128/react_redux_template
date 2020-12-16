@@ -5,7 +5,6 @@ import CommonModal from './CommonModal'
 import SuccessModal from './SuccessModal'
 import { util, format } from '../logic/utils'
 
-
 function parse(decimals) {
   return (v) => {
     return v? format.decimals((v).toString(), decimals).toString() : undefined
@@ -17,8 +16,7 @@ const DEBOUNCE_MSEC = 1000
 export const fields = {
   from: 'from',
   to: 'to',
-  currencyTo: 'currencyTo',
-  currencyFrom: 'currencyFrom'
+  currencyTo: 'currencyTo'
 }
 
 export default class SwapModalComponent extends React.Component {
@@ -28,6 +26,7 @@ export default class SwapModalComponent extends React.Component {
       success: false,
       from: {
         max: '100',
+        fixedRateEnabled: false,
         decimals: 8,
         loading: false
       },
@@ -36,6 +35,7 @@ export default class SwapModalComponent extends React.Component {
         loading: false
       },
       fixedRate: false,
+      fixedRatePossible: false,
       currencies: {
         fixed: [],
         floating: []
@@ -60,8 +60,6 @@ export default class SwapModalComponent extends React.Component {
 
   async componentDidMount() {
     const { change, initCurrencyFrom, initCurrencyTo, doRequest } = this.props
-    
-    const currencyFrom = initCurrencyFrom 
     const currencyTo = initCurrencyTo
 
     const res = await doRequest({
@@ -79,12 +77,14 @@ export default class SwapModalComponent extends React.Component {
         fixed,
         floating
       }
+    }, () => {
+      const isCurrencyFromFixedRate = fixed.findIndex(v => v.currencySymbol.toUpperCase() === initCurrencyFrom.toUpperCase()) !== -1
+      this.setState({ from: { ...this.state.from, fixedRateEnabled: isCurrencyFromFixedRate }}, 
+        () => this.updateFixedRatePossible(initCurrencyTo)
+      )
     })
 
-    change(fields.currencyFrom, currencyFrom)
     change(fields.currencyTo, currencyTo)
-
-    
   }
 
   renderItem = (item, i, onSelected) => (
@@ -99,13 +99,13 @@ export default class SwapModalComponent extends React.Component {
 
   renderCurrencyOption = (name, readonly) => {
     const { initCurrencyFrom } = this.props
-    const { currencies: { fixed, floating } } = this.state 
+    const { currencies: { fixed, floating }, from } = this.state 
     
     const currencies = [...fixed, ...floating]
     const names = currencies.map(v => ({ 
-      fixedRate: v.fixedRateEnabled,
+      fixedRate: from.fixedRateEnabled && v.fixedRateEnabled,
       value: v.currencySymbol.toUpperCase() 
-    }))
+    })).filter(v => v.value.toUpperCase() !== initCurrencyFrom.toUpperCase())
 
     return (
       <Field 
@@ -113,10 +113,7 @@ export default class SwapModalComponent extends React.Component {
         readOnly={readonly}
         elements={names} 
         component={Dropdown}
-        onChange={(v, i) => {
-          console.log(v)
-          this.onCurrencyChanged(this.props.currencyFrom, v)}
-        }
+        onChange={v => this.onCurrencyChanged(v)}
         validate={[ rules.required ]}
         renderItem={this.renderItem}
       >
@@ -132,8 +129,17 @@ export default class SwapModalComponent extends React.Component {
     })
   }
 
-  onCurrencyChanged = async (from, to) => {
+  onCurrencyChanged = async (to) => {
+    this.updateFixedRatePossible(to)
     this.onValueChanged(this.props.amountFrom, fields.to)
+  }
+
+  updateFixedRatePossible = (to) => {
+    const { from, currencies: { fixed } } = this.state
+    const isCurrencyToFixedRate = fixed.findIndex(v => v.currencySymbol.toUpperCase() === to.toUpperCase()) !== -1
+    const fixedRatePossible = from.fixedRateEnabled && isCurrencyToFixedRate
+    
+    this.setState({ fixedRatePossible, fixedRate: false })
   }
 
   onValueChanged = async (v, updateField) => {
@@ -179,13 +185,37 @@ export default class SwapModalComponent extends React.Component {
     })
   }
 
-  onSubmit = (data) => {
-    console.log(data)
-    //this.setSuccess(true)
+  onSubmit = async (data) => {
+    const { doRequest, initCurrencyFrom } = this.props
+    try {
+      this.setState({ loading: true })
+      const body = {
+        authToken: 'kH6BbieWzvwDQriW+nS6++CVkKdqwXDEGe90nq7PiZeIEFk6d2oHRR5xQt50/m2ZwTyo3VlDZKPQBIyVPrwiFfqdUgrcnNOdi1xkJKY5sUu9JyY2VtMpAUCPYBW235FUA177SrSVSiD1DrW4YG9bl9Kou/Oes/sfHcmF9db6Fp5YxDuFwhLbdY+Ul7/TCdV2IcUqSBOL51PLC8e/3dmdpw==',
+        toSymbol: data[fields.currencyTo].toLowerCase(),
+        fromSymbol: initCurrencyFrom.toLowerCase(),
+        amount: data[fields.from],
+        fixedRate: this.state.fixedRate
+      }
+
+      const res = await doRequest({
+        url: 'https://www.bitfi.com/exchange/accountswap',
+        method: 'post',
+        body
+      })  
+
+      if (res == null) {
+        throw 'Something went wrong'
+      }
+
+      this.setState({ loading: false, success: true })
+    }
+    catch (exc) {
+      this.setState({ loading: false })
+    }
   }
 
   renderButtons = () => {
-    const { handleSubmit, onClose } = this.props
+    const { handleSubmit, onClose, valid } = this.props
     const { from: { loading: loadingFrom }, to: { loading: loadingTo }, errors } = this.state
     const loading = loadingFrom || loadingTo
 
@@ -194,10 +224,10 @@ export default class SwapModalComponent extends React.Component {
         <button 
           type="submit" 
           className="btn btn-primary" 
-          disabled={loading || errors}
+          disabled={loading || errors || !valid}
           onClick={handleSubmit(this.onSubmit)}
         >
-          {loading? '...' : 'Swap'}
+          {loading? '...' : 'Swap request'}
         </button>
 
         <button 
@@ -220,7 +250,7 @@ export default class SwapModalComponent extends React.Component {
 
   render() {
     const { isOpen, onClose, errors, initCurrencyFrom, currencyTo } = this.props
-    const { success, from, to, rate, fixedRate } = this.state
+    const { success, from, to, rate, fixedRate, fixedRatePossible } = this.state
     const loading = from.loading || to.loading
     
     if (success) {
@@ -247,12 +277,15 @@ export default class SwapModalComponent extends React.Component {
             >
               Floating rate
             </button>
-            <button 
-              onClick={() => this.onRateTypeChanged(true)} 
-              className={`btn ${fixedRate? 'btn-success' : 'btn-link'}`}
-            >
-              Fixed rate
-            </button>
+            {
+              fixedRatePossible &&
+                <button 
+                  onClick={() => this.onRateTypeChanged(true)} 
+                  className={`btn ${fixedRate? 'btn-success' : 'btn-link'}`}
+                >
+                  Fixed rate
+                </button>
+            }
           </div>
           <form>
             <div className="form-group">
@@ -264,7 +297,7 @@ export default class SwapModalComponent extends React.Component {
                 format={(v) => v && v.replace(',', '.')}
                 component={NumericInput} 
                 onChange={(e, v) => this.onValueChanged(v, fields.to)}
-                suffix={<div className="p-2 pr-3">BTC</div>}
+                suffix={<div className="p-2 pr-3">{initCurrencyFrom}</div>}
               />
             </div>
             
@@ -276,7 +309,7 @@ export default class SwapModalComponent extends React.Component {
 
             <div className="form-group">
               <Field 
-                readOnly={to.loading}
+                readOnly={to.loading || !fixedRatePossible}
                 placeholder={to.loading? '...' : 'YOU RECEIVE'}
                 name={fields.to} 
                 parse={parse(to.decimals)}
@@ -293,11 +326,13 @@ export default class SwapModalComponent extends React.Component {
             <Field 
               name={fields.from} 
               component={this.renderError} 
-              validate={[ this.notmoreThanBalance ]}
+              validate={[ rules.required, this.notmoreThanBalance ]}
             />
           </div>
           {errors}
         </div>
+        <small style="opacity: 0.6;">By clicking "Swap request" I agree with Changelly's&nbsp;<a href="https://changelly.com/terms-of-use" target="_blank">Terms</a>&nbsp;and&nbsp;<a href="https://changelly.com/aml-kyc" target="_blank">AML/KYC.</a></small>
+
       </CommonModal>
     )
   }

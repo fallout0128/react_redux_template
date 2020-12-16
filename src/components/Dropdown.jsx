@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import styles from './Dropdown.css'
 
-export default function({ elements, selectedIndex = 0, onChange, renderItem }) {
+export default function({ 
+  elements, 
+  selectedIndex = 0, 
+  onChange, 
+  renderItem,
+  readOnly
+}) {
   const [noResult, setNoResult] = useState(false)
   const [items, setItems] = useState([])
   const [showMenu, setShowMenu] = useState(false)
@@ -65,6 +71,7 @@ export default function({ elements, selectedIndex = 0, onChange, renderItem }) {
   return (
     <div className={styles['dropdown']}>
       <button 
+        disabled={readOnly}
         onClick={toggleMenu} 
         className="btn btn-secondary dropdown-toggle" 
         type="button" 

@@ -1,0 +1,9 @@
+.commonInputBack {
+  background-color: rgb(246, 247, 248);
+  border-radius: 6px;
+}
+
+.removeOutline:focus {
+  border: none !important;
+  box-shadow: none !important;
+}

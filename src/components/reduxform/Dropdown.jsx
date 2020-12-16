@@ -3,8 +3,9 @@ import Dropdown from '../Dropdown'
 import styles from './style.css'
 
 export default function (field) {
-  const { readOnly, elements, selectedIndex, renderItem } = field
+  const { readOnly, elements, selectedIndex, renderItem, className } = field
   const { input: { onChange } } = field
+  
   return (
     <Dropdown
       elements={elements}
@@ -12,6 +13,7 @@ export default function (field) {
       selectedIndex={selectedIndex}
       onChange={onChange}
       renderItem={renderItem}
+      className={className}
     />
   )
 }

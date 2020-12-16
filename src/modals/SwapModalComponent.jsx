@@ -92,7 +92,10 @@ export default class SwapModalComponent extends React.Component {
       onClick={onSelected}  
       className="w-100 d-flex d-flex justify-content-between pl-4 pr-4"
     >
-      <a className="w-100  p-0">{item.value}</a> 
+      <a className="w-100  p-0">
+        <img src={item.image} width={20} height={20} className="img-fluid mr-2"/>
+        {item.value} <small>{item.displayName}</small>
+      </a> 
       <div>{item.fixedRate? 'fixed' : ''}</div>
     </div>
   )
@@ -103,8 +106,9 @@ export default class SwapModalComponent extends React.Component {
     
     const currencies = [...fixed, ...floating]
     const names = currencies.map(v => ({ 
+      ...v,
       fixedRate: from.fixedRateEnabled && v.fixedRateEnabled,
-      value: v.currencySymbol.toUpperCase() 
+      value: v.currencySymbol.toUpperCase()
     })).filter(v => v.value.toUpperCase() !== initCurrencyFrom.toUpperCase())
 
     return (
@@ -112,6 +116,9 @@ export default class SwapModalComponent extends React.Component {
         name={name} 
         readOnly={readonly}
         elements={names} 
+        className={{
+          menu: { backgroundColor: 'red !important' }
+        }}
         component={Dropdown}
         onChange={v => this.onCurrencyChanged(v)}
         validate={[ rules.required ]}
@@ -190,7 +197,7 @@ export default class SwapModalComponent extends React.Component {
     try {
       this.setState({ loading: true })
       const body = {
-        authToken: 'kH6BbieWzvwDQriW+nS6++CVkKdqwXDEGe90nq7PiZeIEFk6d2oHRR5xQt50/m2ZwTyo3VlDZKPQBIyVPrwiFfqdUgrcnNOdi1xkJKY5sUu9JyY2VtMpAUCPYBW235FUA177SrSVSiD1DrW4YG9bl9Kou/Oes/sfHcmF9db6Fp5YxDuFwhLbdY+Ul7/TCdV2IcUqSBOL51PLC8e/3dmdpw==',
+        authToken: "98rBy8MS2Y/c6z1AeBix4mREMYewbmtXphnjMVrj4/KslOnwcu5h3umL6aZXaDzKQ74VbX9zspI7/1iHaGiGt62uLDKiSfYDV4fB4CfALRdYwcs3feJLHubnd9ubeWr/qZBVfHcVUEvKCtaBC/1RzaclexvOiSoUlh7Esk+b6xY=",
         toSymbol: data[fields.currencyTo].toLowerCase(),
         fromSymbol: initCurrencyFrom.toLowerCase(),
         amount: data[fields.from],
@@ -270,10 +277,10 @@ export default class SwapModalComponent extends React.Component {
       >
         <div>
         
-          <div className="d-flex">
+          <div className="d-flex justify-content-between mb-3 commonInputBack">
             <button 
               onClick={() => this.onRateTypeChanged(false)} 
-              className={`btn ${!fixedRate? 'btn-success' : 'btn-link'}`}
+              className={`w-100 btn ${!fixedRate? 'btn-success' : 'btn-link'} removeOutline`}
             >
               Floating rate
             </button>
@@ -281,14 +288,14 @@ export default class SwapModalComponent extends React.Component {
               fixedRatePossible &&
                 <button 
                   onClick={() => this.onRateTypeChanged(true)} 
-                  className={`btn ${fixedRate? 'btn-success' : 'btn-link'}`}
+                  className={`w-100 btn ${fixedRate? 'btn-success' : 'btn-link'} removeOutline`}
                 >
                   Fixed rate
                 </button>
             }
           </div>
           <form>
-            <div className="form-group">
+            <div className="commonInputBack m-0 d-flex form-group">
               <Field 
                 readOnly={from.loading}
                 placeholder={from.loading? '...' : 'YOU SEND'}
@@ -297,17 +304,17 @@ export default class SwapModalComponent extends React.Component {
                 format={(v) => v && v.replace(',', '.')}
                 component={NumericInput} 
                 onChange={(e, v) => this.onValueChanged(v, fields.to)}
-                suffix={<div className="p-2 pr-3">{initCurrencyFrom}</div>}
               />
+              <div className="d-flex align-items-center p-2 pr-3">{initCurrencyFrom}</div>
             </div>
             
             {
-              <div className={`${fixedRate? 'text-success' : ''}`}>
+              <div className={`${fixedRate? 'text-success' : ''} pb-1 pt-1`}>
                 <small>1 {initCurrencyFrom.toUpperCase()} {fixedRate? '=' : '~'} {(rate && !loading)? parseFloat(rate).toFixed(4) : '...'} {currencyTo.toUpperCase()}</small>
               </div>
             }
 
-            <div className="form-group">
+            <div className="w-100 d-flex form-group">
               <Field 
                 readOnly={to.loading || !fixedRatePossible}
                 placeholder={to.loading? '...' : 'YOU RECEIVE'}
@@ -318,8 +325,9 @@ export default class SwapModalComponent extends React.Component {
                     this.onValueChanged(v, fields.from)
                   )
                 }
-                suffix={this.renderCurrencyOption(fields.currencyTo, loading)}
+                
               />
+              {this.renderCurrencyOption(fields.currencyTo, loading)}
             </div>
           </form>
           <div>

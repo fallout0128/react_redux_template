@@ -5,8 +5,8 @@ export default function (field) {
   const { placeholder, readOnly, value, suffix, prefix, className, onChange, input } = field
   return (
     <React.Fragment>
-      <div className={`d-flex ${styles.commonInput}`}>
-        {prefix}
+      <div className={`${styles.commonInput}`}>
+        
         <input
           readOnly={readOnly}
           placeholder={placeholder}
@@ -17,7 +17,7 @@ export default function (field) {
           onChange={onChange}
           {...input}
         />
-        {suffix}
+        
       </div>
     </React.Fragment>
   )

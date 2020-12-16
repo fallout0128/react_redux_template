@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useRequest } from '../hooks'
 import { format } from '../logic/utils'
 
-const protectedToken = 'kH6BbieWzvwDQriW+nS6++CVkKdqwXDEGe90nq7PiZeIEFk6d2oHRR5xQt50/m2ZwTyo3VlDZKPQBIyVPrwiFfqdUgrcnNOdi1xkJKY5sUu9JyY2VtMpAUCPYBW235FUA177SrSVSiD1DrW4YG9bl9Kou/Oes/sfHcmF9db6Fp5YxDuFwhLbdY+Ul7/TCdV2IcUqSBOL51PLC8e/3dmdpw=='
+const protectedToken = "98rBy8MS2Y/c6z1AeBix4mREMYewbmtXphnjMVrj4/KslOnwcu5h3umL6aZXaDzKQ74VbX9zspI7/1iHaGiGt62uLDKiSfYDV4fB4CfALRdYwcs3feJLHubnd9ubeWr/qZBVfHcVUEvKCtaBC/1RzaclexvOiSoUlh7Esk+b6xY="
 
 export default function({ }) {
   const [history, setHistory] = useState([])
@@ -14,7 +14,8 @@ export default function({ }) {
     },
     method: 'post',
     onSuccess: h => {
-      setHistory(h)
+      console.log(h)
+      setHistory(h.reverse())
     }
   })
 
@@ -53,7 +54,7 @@ export default function({ }) {
             <tr>
               <th>{v.amountSent}</th>
               <th>{v.amountExpectedTo}</th>
-              <th>{`${v.networkFrom} -> ${v.networkTo}`}</th>
+              <th>{`${v.fromSymbol} -> ${v.toSymbol}`}</th>
               <th><a href={v.tracking} target="_blank">details</a></th>
             </tr>
           )}

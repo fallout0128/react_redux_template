@@ -6,7 +6,8 @@ export default function({
   selectedIndex = 0, 
   onChange, 
   renderItem,
-  readOnly
+  readOnly,
+  className
 }) {
   const [noResult, setNoResult] = useState(false)
   const [items, setItems] = useState([])
@@ -48,22 +49,24 @@ export default function({
 
   const renderMenu = () => {
     return (
-      <div className={`w-100 ${styles['dropdown-menu']}`}>
-        <form className="px-4 py-2">
+      <div className={styles['dropdown-menu-container']}>
+        <div className={`${styles['dropdown-menu']} pb-3 ${className?.menu}`}>
+          <form className=" py-2">
           <input 
             type="search" 
-            className="form-control" 
-            placeholder="BTC"
+            className="px-4 form-control removeOutline" 
+            placeholder="Type to search"
             onChange={v => filter(v.target.value.trim().toLowerCase())}
           />
-        </form>
-        {renderItems()}
-        {
-          noResult && 
-            <div className={`dropdown-header ${styles['dropdown-header']}`}>
-              No coins found
-            </div>
-        }
+          </form>
+          {renderItems()}
+          {
+            noResult && 
+              <div className={`dropdown-header ${styles['dropdown-header']}`}>
+                No coins found
+              </div>
+          }
+        </div>
       </div> 
     )
   }
@@ -73,7 +76,7 @@ export default function({
       <button 
         disabled={readOnly}
         onClick={toggleMenu} 
-        className="btn btn-secondary dropdown-toggle" 
+        className={`h-100 btn btn-secondary dropdown-toggle ${styles['dropdown-toggle']} removeOutline`}
         type="button" 
       >
         {items[selected] && items[selected].value}

@@ -1,6 +1,6 @@
 import { Coin } from '../../logic'
 
-const required = v => !v? `Can't be empty` : undefined
+const required = v => !v? `Please, enter some value` : undefined
 const minBtc = (minBtc, decimals, { included = true, message, symbol = '' }) => {
   const minCoin = Coin.fromBtc(minBtc, decimals)
   

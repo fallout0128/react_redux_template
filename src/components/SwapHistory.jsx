@@ -42,20 +42,38 @@ export default function({ }) {
   return (
     <div>
       <h3>History</h3>
-      <table className="table">
+      <table  className="table table-responsive-sm">
         <thead>
+          <th>swap</th>
           <th>sent</th>
           <th>received</th>
-          <th>swap</th>
           <th>link</th>
         </thead>
-        <tbody>
+        <tbody >
           {history.map(v => 
-            <tr>
-              <th>{v.amountSent}</th>
-              <th>{v.amountExpectedTo}</th>
-              <th>{`${v.fromSymbol} -> ${v.toSymbol}`}</th>
-              <th><a href={v.tracking} target="_blank">details</a></th>
+            <tr >
+              <th>
+                
+                <div className="d-flex align-items-center">
+                  {
+                    v.fixedRate && 
+                      <span class="material-icons icon mr-1 mb-1">
+                        lock_open
+                      </span>
+                  }
+                  
+                  <small>{v.fromSymbol.toUpperCase()}</small>
+                  <span class="material-icons icon open">
+                    swap_vert
+                  </span> 
+                  <small>{v.toSymbol.toUpperCase()}</small>
+                  
+                </div>
+              </th>
+              <th style={{ fontWeight: '400'}}>{format.btc(v.amountSent, 6, '')}</th>
+              <th style={{ fontWeight: '400'}}>{format.btc(v.amountExpectedTo, 6, '')}</th>
+              
+              <th style={{ fontWeight: '400'}}><a href={v.tracking} target="_blank">{v.changellyID.slice(0, 3)}...{v.changellyID.slice(-3)}</a></th>
             </tr>
           )}
         </tbody>

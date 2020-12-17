@@ -79,7 +79,7 @@ export default function({
         className={`h-100 btn btn-secondary dropdown-toggle ${styles['dropdown-toggle']} removeOutline`}
         type="button" 
       >
-        {items[selected] && items[selected].value}
+        <strong>{items[selected] && items[selected].value}</strong>
       </button>
       {showMenu? renderMenu() : undefined}
     </div>
